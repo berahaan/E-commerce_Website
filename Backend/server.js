@@ -1,3 +1,4 @@
+require("dotenv").config()
 import express from "express";
 import multer from "multer";
 import mongoose from "mongoose";
@@ -11,19 +12,19 @@ import MongoStore from "connect-mongo";
 import session from "express-session";
 import bcrypt from "bcrypt";
 const app = express();
+const PORT =process.env.SERVER_PORT ||2000
 app.use(express.json());
 app.use(express.static("Public"));
 app.use(bodyParser.json());
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin:process.env.CORS_ORIGIN,
     credentials: true,
   })
 );
-// app.use("Public/image", express.static("uploads")); // Serve uploaded files
 app.use("/image", express.static(path.join("Public/image")));
 mongoose
-  .connect("mongodb://localhost:27017/Intern_task_3")
+  .connect(process.env.MONGODB_CONNECTION)
   .then(() => {
     console.log("Successfully connected to MongoDB");
   })
@@ -32,11 +33,11 @@ mongoose
   });
 app.use(
   session({
-    secret: "birhan_kabtamu",
+    secret:process.env.SESSION_SECRET_KEY,
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({
-      mongoUrl: "mongodb://localhost:27017/Intern_task_3",
+      mongoUrl:process.env.MONGODB_CONNECTION,
     }),
     cookie: {
       secure: false,
@@ -208,6 +209,7 @@ app.get("/customer", isAuthenticated, hasRole("customer"), (req, res) => {
     .status(200)
     .json({ message: "Welcome,pages guys be free to be whom you are" });
 });
+//
 app.post("/register", async (req, res) => {
   const { email, password, role, Username } = req.body;
   try {
@@ -294,6 +296,6 @@ app.delete("/remove/:id", async (req, resp) => {
 });
 //////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////
-app.listen(2000, () => {
-  console.log("Server is running on port 2000");
+app.listen(PORT, () => {
+  console.log("Server is running on port",PORT);
 });
